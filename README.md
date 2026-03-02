@@ -11,6 +11,11 @@ A self-contained Python UCI chess bot with no third-party dependencies.
 - It is **not** stronger than Stockfish.
 - It is a lightweight educational engine, useful as a baseline and for testing integrations.
 
+## Is it AI?
+Yes—this bot is a basic **game-playing AI**. It uses search (iterative deepening + alpha-beta pruning)
+and an evaluation function to pick moves. It is not machine-learning based, and it is far weaker than
+modern engines like Stockfish.
+
 ## Run
 ```bash
 python bot.py
