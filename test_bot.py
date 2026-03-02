@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 from bot import Board, Move, best_move
 
 
@@ -18,3 +21,17 @@ def test_move_applied_from_uci_coords():
     m = Move(6, 4, 4, 4)
     b.push(m)
     assert b.board[4][4] == "P"
+
+
+def test_uci_handshake_and_bestmove_output():
+    proc = subprocess.run(
+        [sys.executable, "bot.py"],
+        input="uci\nisready\nposition startpos\ngo movetime 50\nquit\n",
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    out = proc.stdout
+    assert "uciok" in out
+    assert "readyok" in out
+    assert "bestmove " in out
