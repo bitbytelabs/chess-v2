@@ -14,6 +14,72 @@ FILES = "abcdefgh"
 RANKS = "12345678"
 DEFAULT_PIECE_VAL = {"p": 100, "n": 320, "b": 330, "r": 500, "q": 900, "k": 0}
 PIECE_ORDER = ["p", "n", "b", "r", "q"]
+MOBILITY_WEIGHT = {"n": 4, "b": 5, "r": 3, "q": 2}
+DOUBLED_PAWN_PENALTY = 12
+BISHOP_PAIR_BONUS = 25
+
+PIECE_SQUARE_TABLES = {
+    "p": [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [8, 8, 8, 8, 8, 8, 8, 8],
+        [4, 5, 6, 8, 8, 6, 5, 4],
+        [2, 3, 4, 6, 6, 4, 3, 2],
+        [1, 2, 2, 4, 4, 2, 2, 1],
+        [0, 1, 1, 2, 2, 1, 1, 0],
+        [0, 0, 0, -6, -6, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+    "n": [
+        [-15, -10, -8, -8, -8, -8, -10, -15],
+        [-10, -4, 0, 1, 1, 0, -4, -10],
+        [-8, 0, 4, 6, 6, 4, 0, -8],
+        [-8, 1, 6, 8, 8, 6, 1, -8],
+        [-8, 1, 6, 8, 8, 6, 1, -8],
+        [-8, 0, 4, 6, 6, 4, 0, -8],
+        [-10, -4, 0, 1, 1, 0, -4, -10],
+        [-15, -10, -8, -8, -8, -8, -10, -15],
+    ],
+    "b": [
+        [-8, -6, -4, -4, -4, -4, -6, -8],
+        [-6, 0, 1, 2, 2, 1, 0, -6],
+        [-4, 1, 4, 5, 5, 4, 1, -4],
+        [-4, 2, 5, 6, 6, 5, 2, -4],
+        [-4, 2, 5, 6, 6, 5, 2, -4],
+        [-4, 1, 4, 5, 5, 4, 1, -4],
+        [-6, 0, 1, 2, 2, 1, 0, -6],
+        [-8, -6, -4, -4, -4, -4, -6, -8],
+    ],
+    "r": [
+        [2, 2, 3, 4, 4, 3, 2, 2],
+        [2, 2, 3, 4, 4, 3, 2, 2],
+        [0, 1, 2, 3, 3, 2, 1, 0],
+        [0, 1, 2, 3, 3, 2, 1, 0],
+        [0, 1, 2, 3, 3, 2, 1, 0],
+        [0, 1, 2, 3, 3, 2, 1, 0],
+        [6, 6, 6, 6, 6, 6, 6, 6],
+        [2, 2, 3, 4, 4, 3, 2, 2],
+    ],
+    "q": [
+        [-4, -2, -1, 0, 0, -1, -2, -4],
+        [-2, 0, 1, 1, 1, 1, 0, -2],
+        [-1, 1, 2, 2, 2, 2, 1, -1],
+        [0, 1, 2, 3, 3, 2, 1, 0],
+        [0, 1, 2, 3, 3, 2, 1, 0],
+        [-1, 1, 2, 2, 2, 2, 1, -1],
+        [-2, 0, 1, 1, 1, 1, 0, -2],
+        [-4, -2, -1, 0, 0, -1, -2, -4],
+    ],
+    "k": [
+        [-20, -20, -16, -12, -12, -16, -20, -20],
+        [-12, -12, -8, -6, -6, -8, -12, -12],
+        [-8, -8, -6, -4, -4, -6, -8, -8],
+        [-6, -6, -4, -2, -2, -4, -6, -6],
+        [-4, -4, -2, 0, 0, -2, -4, -4],
+        [0, 0, 2, 4, 4, 2, 0, 0],
+        [8, 8, 8, 8, 8, 8, 8, 8],
+        [12, 16, 8, 0, 0, 8, 16, 12],
+    ],
+}
 
 
 
@@ -301,13 +367,31 @@ class Board:
 
 def evaluate(board: Board, piece_values: Dict[str, int]) -> int:
     score = 0
+    piece_counts = {"w": {"b": 0}, "b": {"b": 0}}
+    pawn_files = {"w": [0] * 8, "b": [0] * 8}
     for r in range(8):
         for c in range(8):
             p = board.board[r][c]
             if p == ".":
                 continue
-            v = piece_values[p.lower()]
+            side = "w" if p.isupper() else "b"
+            t = p.lower()
+            v = piece_values[t]
+            pst = PIECE_SQUARE_TABLES[t][r][c] if side == "w" else PIECE_SQUARE_TABLES[t][7 - r][c]
+            if t == "b":
+                piece_counts[side]["b"] += 1
+            if t == "p":
+                pawn_files[side][c] += 1
+            mobility = 0
+            if t in MOBILITY_WEIGHT:
+                mobility = len(board._piece_moves(r, c, p)) * MOBILITY_WEIGHT[t]
+            v += pst + mobility
             score += v if p.isupper() else -v
+    for side in ("w", "b"):
+        doubled = sum(max(0, count - 1) for count in pawn_files[side])
+        score += -DOUBLED_PAWN_PENALTY * doubled if side == "w" else DOUBLED_PAWN_PENALTY * doubled
+        if piece_counts[side]["b"] >= 2:
+            score += BISHOP_PAIR_BONUS if side == "w" else -BISHOP_PAIR_BONUS
     return score if board.turn == "w" else -score
 
 

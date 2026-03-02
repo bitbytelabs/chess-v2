@@ -5,7 +5,7 @@ A self-contained Python UCI chess bot with no third-party dependencies.
 ## What this bot does
 - Implements the **UCI protocol** (`uci`, `isready`, `position`, `go`, `quit`) so chess GUIs can communicate with it.
 - Generates legal chess moves, including castling, en passant, and queen promotion.
-- Chooses a move with iterative deepening + alpha-beta search and a simple material evaluation.
+- Chooses a move with iterative deepening + alpha-beta search and a richer handcrafted evaluation (material, piece-square tables, mobility, bishop pair, and pawn-structure penalties).
 - Supports a lightweight **training mode** that tunes piece weights with self-play and saves them to JSON.
 
 ## What this bot does *not* do
