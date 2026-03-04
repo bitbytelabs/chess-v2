@@ -11,5 +11,8 @@ dependencies = [
   "chess>=1.10.0"
 ]
 
+[project.scripts]
+chess-ai = "chess_ai.cli:main"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
