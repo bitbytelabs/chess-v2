@@ -1,7 +1,9 @@
 from pathlib import Path
 
 import chess
+import pytest
 
+from chess_ai.cli import train_model
 from chess_ai.engine import ChessAI
 from chess_ai.llm import TinyMoveLLM
 
@@ -35,3 +37,18 @@ def test_ai_chooses_legal_move() -> None:
 
     move = ai.choose_move(board, history=[])
     assert move in board.legal_moves
+
+
+def test_train_model_works_with_sample_data(tmp_path: Path) -> None:
+    model_path = tmp_path / "model.json"
+    train_model("data/games.pgn", str(model_path))
+
+    loaded = TinyMoveLLM.load(model_path)
+    assert loaded.score(["e2e4"], "e7e5") > 0
+
+
+def test_train_model_fails_with_clear_message_for_missing_pgn(tmp_path: Path) -> None:
+    model_path = tmp_path / "model.json"
+
+    with pytest.raises(SystemExit, match="PGN file not found"):
+        train_model("data/does-not-exist.pgn", str(model_path))
