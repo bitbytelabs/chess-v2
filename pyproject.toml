@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chess-ai-llm"
+version = "0.1.0"
+description = "Trainable chess AI with a local lightweight language model"
+requires-python = ">=3.10"
+dependencies = [
+  "chess>=1.10.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
