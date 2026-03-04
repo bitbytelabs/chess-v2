@@ -30,6 +30,8 @@ the cross-platform `chess-ai` console command.
 
 ## Train
 
+The repository includes a starter PGN at `data/games.pgn`, so this command works out of the box:
+
 ```bash
 python -m chess_ai.cli train --pgn data/games.pgn --output model.json
 # or

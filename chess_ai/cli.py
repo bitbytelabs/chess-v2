@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 import chess
 
@@ -10,8 +11,14 @@ from .training import parse_pgn_moves
 
 
 def train_model(pgn_path: str, output_path: str) -> None:
+    source = Path(pgn_path)
+    if not source.exists():
+        raise SystemExit(
+            f"PGN file not found: {source} (current directory: {Path.cwd()})"
+        )
+
     model = TinyMoveLLM()
-    model.train(parse_pgn_moves(pgn_path))
+    model.train(parse_pgn_moves(source))
     model.save(output_path)
     print(f"Saved model to {output_path}")
 
